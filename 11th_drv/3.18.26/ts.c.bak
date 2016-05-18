@@ -1,0 +1,99 @@
+#include <linux/errno.h>
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/gpio.h>
+#include <linux/input.h>
+#include <linux/delay.h>
+#include <linux/interrupt.h>
+#include <linux/platform_device.h>
+#include <linux/clk.h>
+#include <linux/io.h>
+
+#include <plat/adc.h>
+#include <plat/regs-adc.h>
+#include <linux/platform_data/touchscreen-s3c2410.h>
+
+struct s3c_ts_regs {
+	unsigned long adccon;
+	unsigned long adctsc;
+	unsigned long adcdly;
+	unsigned long adcdat0;
+	unsigned long adcdat1;
+	unsigned long adcupdn;
+};
+
+static volatile struct s3c_ts_regs *s3c_ts_regs;
+static struct input_dev *ts_dev; 
+static struct clk	*clk;
+
+static void wait_pen_up_mode(void)
+{
+	s3c_ts_regs->adctsc = 0x1d3;
+}
+
+static void wait_pen_down_mode(void)
+{
+	s3c_ts_regs->adctsc = 0xd3;
+}
+
+static irqreturn_t pen_down_up_irq(int irq, void *dev_id)
+{
+	if(s3c_ts_regs->adcdat0 & (1<<15))
+	{
+		printk("pen up\n");
+		wait_pen_up_mode();
+	}
+	else
+	{
+		printk("pen down\n");
+		wait_pen_down_mode();
+	}
+	return IRQ_HANDLED;
+}
+
+static int s3c_ts_init(void)
+{
+	/* 分配空间 */
+	ts_dev = input_allocate_device();
+	/* 设置 */
+
+	set_bit(EV_KEY,ts_dev->evbit); //表示产生哪类事件
+	set_bit(EV_ABS,ts_dev->evbit); //触摸屏
+
+	set_bit(BTN_TOUCH,ts_dev->keybit);
+	input_set_abs_params(ts_dev, ABS_X, 0, 0x3FF, 0, 0);
+	input_set_abs_params(ts_dev, ABS_Y, 0, 0x3FF, 0, 0);
+	input_set_abs_params(ts_dev, ABS_PRESSURE, 0, 1, 0, 0);
+
+	/* 注册 */
+	input_register_device(ts_dev);
+	/* 硬件相关的代码 */
+	/* 使能clkcon[15] */
+	clk = clk_get(NULL, "adc");
+	clk_enable(clk);
+
+	/* 对对应管脚进行ioremap */
+	s3c_ts_regs = ioremap(0x5800000,sizeof(struct s3c_ts_regs));
+	/* 设置ADC相应寄存器 */
+	/* ADCCON 
+	 * [14] : 1
+	 * [13 : 6] : 49
+	 * [0] : 0暂时为0
+	 */
+	s3c_ts_regs->adccon = (1<<14) | (49<<6);
+	request_irq(IRQ_TC, pen_down_up_irq, 0,"ts_pen", NULL);
+
+}
+static void s3c_exit(void)
+{
+	free_irq(IRQ_TC,NULL);
+	iounmap(s3c_ts_regs);
+	input_unregister_device(ts_dev);
+	input_free_device(ts_dev);
+}
+
+moudle_init(s3c_ts_init);
+moudle_exit(s3c_exit);
+
+MODULE_LICENSE("GPL");
+
