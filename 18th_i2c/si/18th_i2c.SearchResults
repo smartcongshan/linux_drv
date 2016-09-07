@@ -1,0 +1,5 @@
+---- nand_read Matches (4 in 2 files) ----
+Init.c:    extern void nand_read(unsigned char *buf, unsigned long start_addr, int size);
+Init.c:    nand_read(buf, start_addr, size);
+Nand.c:void nand_read(unsigned char *buf, unsigned long start_addr, int size);
+Nand.c:void nand_read(unsigned char *buf, unsigned long start_addr, int size)
