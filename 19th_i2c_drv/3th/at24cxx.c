@@ -7,21 +7,39 @@
 #include <linux/mutex.h>
 
 static unsigned short ignore[] = { I2C_CLIENT_END };
-static unsigned short normal_addr[] = { 0x60, I2C_CLIENT_END };
+static unsigned short normal_addr[] = { 0x50, I2C_CLIENT_END };
 
 static unsigned short force_addr[] = {ANY_I2C_BUS, 0x60, I2C_CLIENT_END};
 static unsigned short * forces[] = {force_addr,NULL};
+
+static struct i2c_driver at24cxx_driver;
 
 static struct i2c_client_address_data addr_data = {
 	.normal_i2c	= normal_addr,
 	.probe		= ignore,	//省略
 	.ignore		= ignore,
-	//.forces		= forces,	//强制让设备认为是这个设备
+//	.forces		= forces,	//强制让设备认为是这个设备
 };
 
 static int at24cxx_detect(struct i2c_adapter *adapter, int address, int kind)
 {
+	struct i2c_client *new_client;
+	
+	
 	printk("at24cxx_detect\n");
+
+	new_client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
+
+	new_client->addr = address;
+	new_client->adapter = adapter;
+	new_client->driver = &at24cxx_driver;
+	new_client->flags = 0;
+
+	/* Fill in the remaining client fields */
+	strcpy(new_client->name, "at24cxx");
+
+	i2c_attach_client(new_client);
+	
 	return 0;
 }
  
