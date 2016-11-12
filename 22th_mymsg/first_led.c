@@ -47,6 +47,7 @@ static struct file_operations first_drv_fops = {
 int major;
 int first_init(void)
 {
+	myprintk("first_init\n");
 	printk(KERN_DEBUG"%s %s %d\n",__FILE__,__FUNCTION__,__LINE__);
 	major = register_chrdev(0,"first_drv", &first_drv_fops); //×¢²áÇý¶¯³ÌÐò
 	printk(KERN_DEBUG"%s %s %d\n",__FILE__,__FUNCTION__,__LINE__);

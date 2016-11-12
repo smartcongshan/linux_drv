@@ -27,10 +27,8 @@ static ssize_t at24cxx_read (struct file *file, char __user *buf, size_t size, l
 	printk("%s %s %d\n", __FILE__, __FUNCTION__, __LINE__);
 	int ret;
 	unsigned char addr,data;
-	printk("copy from user begin\n");
 	if( copy_from_user(&addr, buf, 1))
 		return -1;
-	printk("copy from user over\n");
 	data = i2c_smbus_read_byte_data(at24cxx_client,addr);
 	printk("data : 0x%x\n",data);
 	if(copy_to_user(buf,&data,1))
