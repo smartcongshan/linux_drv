@@ -60,7 +60,6 @@ static void first_drv_setup_cdev(struct first_dev *dev, int index)
 	int err;
 
 	cdev_init(&dev->cdev,&first_drv_fops);
-	dev->cdev.owner = THIS_MODULE;
 	err = cdev_add(&dev->cdev, devno, 1);
 	if(err)
 		printk(KERN_NOTICE"Error adding first_drv%d", err, index);	
@@ -95,19 +94,19 @@ static __init int first_drv_init(void)
 	}
 	printk("kzalloc over\n");
 	first_drv_setup_cdev(first_dev, 0);
-	/*
-	printk("class create start\n");
-	 /*利用mdev自动创建设备节点 
-	cls = class_create(THIS_MODULE, "first_drv");
-	if(cls)
-	{
-		return -ENOMEM;
-		goto fail_class_create;
-	}
 	
-	device_create(cls, NULL, devno, NULL, "first_drv");
-	printk("device create end\n");
-	*/
+	printk("class create start\n");
+	 /*利用mdev自动创建设备节点 */
+	cls = class_create(THIS_MODULE, "first_drv");
+	//if(cls)
+	//{
+	//	return -ENOMEM;
+	//	goto fail_class_create;
+	//}
+	printk("class_create end\n");
+	device_create(cls, NULL, MKDEV(major, 0), NULL, "first_drv");
+	printk("device_create end\n");
+	
 	/* 硬件相关的设置 */
 	gpbcon = (volatile unsigned long *)ioremap(0x56000010, 16);
 	gpbdat = gpbcon + 1;
