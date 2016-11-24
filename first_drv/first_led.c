@@ -8,6 +8,9 @@
 #include <linux/module.h>  
 #include <linux/device.h>  
 
+#define DBG_PRINTK 	printk
+//#define DBG_PRINTK(arg...) 	
+
 volatile unsigned long *gpbcon = NULL;
 volatile unsigned long *gpbdat = NULL;
 
@@ -44,13 +47,13 @@ static struct file_operations first_drv_fops = {
 int major;
 int first_init(void)
 {
-
+	printk(KERN_DEBUG"%s %s %d\n",__FILE__,__FUNCTION__,__LINE__);
 	major = register_chrdev(0,"first_drv", &first_drv_fops); //×¢²áÇý¶¯³ÌÐò
-
+	printk(KERN_DEBUG"%s %s %d\n",__FILE__,__FUNCTION__,__LINE__);
 	firstdrv_class = class_create(THIS_MODULE, "first_drv");
-
-	firstdrv_class_dev = device_create(firstdrv_class, NULL, MKDEV(major, 0), NULL, "xyz"); /* /dev/xyz */
-
+	printk(KERN_DEBUG"%s %s %d\n",__FILE__,__FUNCTION__,__LINE__);
+	firstdrv_class_dev = class_device_create(firstdrv_class, NULL, MKDEV(major, 0), NULL, "xyz"); /* /dev/xyz */
+	printk(KERN_DEBUG"%s %s %d\n",__FILE__,__FUNCTION__,__LINE__);
 	gpbcon = (volatile unsigned long *)ioremap(0x56000010, 16);
 	gpbdat = gpbcon + 1;
 	return 0;
@@ -59,7 +62,7 @@ void first_exit(void)
 {
 	unregister_chrdev(major, "first_drv");
 
-	device_unregister(firstdrv_class_dev);
+	class_device_unregister(firstdrv_class_dev);
 	class_destroy(firstdrv_class);
 	iounmap(gpbcon);
 }
