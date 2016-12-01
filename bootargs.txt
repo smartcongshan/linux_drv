@@ -1,0 +1,6 @@
+此命令参数可以在任意的内核文件中的Documentation文件夹搜索“nfsroot”中可以找到该说明文档
+root=/dev/nfs nfsroot=[<server-ip>:]<root-dir>[,<nfs-options>] ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>:
+   <dns0-ip>:<dns1-ip>
+console=ttySAC0,115200 root=/dev/nfs nfsroot=192.168.96.123:/work/nfs_root/first_fs ip=192.168.96.97:192.168.96.123:192.168.96.1:255.255.255.0::eth0:off:: init=/linuxrc
+console=ttySAC0,115200 root=/dev/nfs nfsroot=192.168.96.110:/work/first_fs ip=192.168.96.97:192.168.96.110:192.168.96.1:255.255.255.0::eth0:off:: init=/linuxrc user_debug=0xff
+console=ttySAC0,115200 root=/dev/nfs nfsroot=192.168.96.110:/work/first_fs ip=192.168.96.97:192.168.96.110:192.168.96.1:255.255.255.0::eth0:off:: init=/linuxrc
